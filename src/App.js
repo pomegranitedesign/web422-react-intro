@@ -11,7 +11,7 @@ import {
   Row,
   Col
 } from 'react-bootstrap'
-import { Link, Switch, Redirect, Route } from 'react-router-dom'
+import { Link, Switch, Redirect, Route, withRouter } from 'react-router-dom'
 import { LinkContainer } from 'react-router-bootstrap'
 
 import Sales from './Components/Sales'
@@ -33,6 +33,9 @@ class App extends Component {
   updateSearchId = (e) => this.setState({ [e.target.name]: e.target.value })
 
   render() {
+    if (this.props.location.pathname === '/')
+      return <Redirect exact push to='/Sales' />
+
     return (
       <div>
         <Navbar inverse collapseOnSelect staticTop>
@@ -102,4 +105,4 @@ class App extends Component {
   }
 }
 
-export default App
+export default withRouter(App)

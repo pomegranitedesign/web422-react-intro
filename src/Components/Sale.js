@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { ListGroup, ListGroupItem, Table } from 'react-bootstrap'
 import ReactLoading from 'react-loading'
+import uuid from 'uuid/v4'
 
 class Sale extends Component {
   state = {
@@ -10,24 +11,34 @@ class Sale extends Component {
 
   getData = async () => {
     const { id, viewedSale } = this.props
+
+    await fetch(`https://still-wave-48213.herokuapp.com/api/sales/${id}`)
+      .then((response) => response.json())
+      .then((sale) => {
+        this.setState({ sale, loading: false })
+        viewedSale(id)
+      })
+      .catch((err) => console.error(err))
   }
 
   async componentDidMount() {
-    const response = await fetch(
-      `https://still-wave-48213.herokuapp.com/api/sale/id=${this.props.id}`
-    )
-
-    console.log(response)
+    await this.getData()
   }
 
-  componentDidUpdate(prevProps) {
+  async componentDidUpdate(prevProps) {
     if (this.props.id !== prevProps.id) {
       this.setState({ loading: true })
-      this.getData()
+      await this.getData()
     }
   }
 
-  itemTotal = (items) => items.reduce((a, b) => a.price + b.price, 0)
+  itemTotal = (items) => {
+    let total = 0
+    for (let item of items) {
+      total += item.price
+    }
+    return total.toFixed(2)
+  }
 
   render() {
     if (this.state.loading) {
@@ -56,7 +67,7 @@ class Sale extends Component {
             </ListGroupItem>
           </ListGroup>
 
-          <h2>Items: {this.itemTotal(sale.items)}</h2>
+          <h2>Items: ${this.itemTotal(sale.items)}</h2>
 
           <Table>
             <thead>
@@ -67,11 +78,11 @@ class Sale extends Component {
               </tr>
             </thead>
             <tbody>
-              {sale.items.map((item) => (
-                <tr>
-                  <td>{item.name}</td>
-                  <td>{item.quantity}</td>
-                  <td>{item.price}</td>
+              {sale.items.map(({ name, quantity, price }) => (
+                <tr key={uuid()}>
+                  <td>{name}</td>
+                  <td>{quantity}</td>
+                  <td>{price}</td>
                 </tr>
               ))}
             </tbody>
